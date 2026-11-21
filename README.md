@@ -1,192 +1,201 @@
-# 📚 Ask to Zuzu — PDF Q&A Chatbot using RAG (Gemini + FAISS)
+# AI-Powered PDF Assistant
 
-Ask to Zuzu is a Retrieval-Augmented Generation (RAG) chatbot that lets you upload any PDF and ask natural language questions about it. The app retrieves the most relevant sections of the document and uses Google's Gemini model to generate accurate, context-grounded answers — reducing hallucination and keeping responses grounded in your actual data.
+A Python-based PDF question-answering application built with **Retrieval-Augmented Generation (RAG)**. Users can upload PDF documents and ask questions in natural language. The application retrieves relevant passages from the document and passes them to Google's Gemini model to generate context-based answers.
 
-Built as a hands-on project to understand the complete RAG pipeline: from raw PDF text to vector search to LLM-generated answers.
+> **Project status:** This repository is a modified learning project based on the [Ask to Zuzu — PDF Q&A Chatbot](https://github.com/aankitsharma/ask-to-zuzu-rag-chatbot). The original project is credited here. Before redistributing its source code, check the original author's permission and any applicable licence terms. Document your own changes in this repository.
 
-> 🧩 **Built step by step, from scratch.** This project wasn't written in one go — it was built incrementally, one concept at a time (PDF reading → chunking → embeddings → vector search → LLM answer generation), with each step tested independently before moving to the next. The `step1_*.py` to `step8_*.py` files in this repo are that exact journey, kept intentionally so anyone can follow the same path.
->
-> 👶 **Beginner-friendly by design.** If you're new to RAG or LLM applications, you don't need to jump straight into `app.py`. Start from `step1_pdf_reader.py` and move forward one file at a time — each script builds on the last and shows exactly one new concept, making this a good reference for anyone learning RAG for the first time.
+## Features
 
----
+- Upload one or more PDF documents.
+- Extract text from PDFs using PyMuPDF.
+- Split extracted text into overlapping chunks.
+- Generate text embeddings using Google's Gemini embedding model.
+- Store and search embeddings with FAISS.
+- Retrieve relevant document chunks for a user's question.
+- Generate an answer using Gemini with the retrieved text as context.
+- Save and reload the FAISS index and text chunks to avoid processing the same documents again.
 
-## 🎥 Demo
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/4e176ebd-270a-4859-9056-45b9daa7ccd4" />
+## Tech stack
 
+| Component | Technology |
+|---|---|
+| Programming language | Python |
+| User interface | Streamlit |
+| LLM and embeddings | Google Gemini API |
+| Vector search | FAISS |
+| Text chunking | LangChain |
+| PDF text extraction | PyMuPDF (`fitz`) |
+| Environment configuration | `python-dotenv` |
 
+## How it works
 
----
+1. **PDF upload:** The user uploads one or more PDF files.
+2. **Text extraction:** PyMuPDF extracts text from the uploaded documents.
+3. **Chunking:** LangChain's `RecursiveCharacterTextSplitter` divides the text into smaller, overlapping chunks.
+4. **Embedding generation:** Gemini converts each chunk into a numerical vector (embedding).
+5. **Indexing:** FAISS stores the vectors so that similar content can be found efficiently.
+6. **Question retrieval:** The user's question is embedded and FAISS retrieves the most relevant chunks.
+7. **Answer generation:** Gemini receives the question and retrieved context and generates a response.
 
-## ✨ Features
-
-- 📄 **Multi-PDF upload** — process one or several PDFs at once
-- ✂️ **Smart chunking** — splits documents into overlapping chunks for better context retention
-- 🧠 **Semantic embeddings** — powered by Google's `gemini-embedding-001` model
-- ⚡ **Fast vector search** — FAISS (`IndexFlatL2`) for similarity-based retrieval
-- 💬 **Context-grounded answers** — powered by `gemini-flash-latest`, with a strict "answer only from context" instruction to reduce hallucination
-- 🖥️ **Simple Streamlit UI** — upload PDFs on one side, chat on the other
-- 💾 **Persistent vector store** — save and reload FAISS index + chunks without re-processing PDFs every time
-
----
-
-## 🏗️ How It Works
-
+```text
+PDF files
+   |
+   v
+Extract text (PyMuPDF)
+   |
+   v
+Split text into chunks (LangChain)
+   |
+   v
+Generate embeddings (Gemini)
+   |
+   v
+Store vectors (FAISS)
+   |
+   v
+User asks a question
+   |
+   v
+Retrieve relevant chunks (FAISS)
+   |
+   v
+Generate a context-based answer (Gemini)
+   |
+   v
+Display answer in Streamlit
 ```
-                 ┌─────────────┐
-                 │   PDF(s)    │
-                 └──────┬──────┘
-                        ▼
-              Extract text (PyMuPDF)
-                        ▼
-           Split into chunks (LangChain)
-                        ▼
-        Generate embeddings (Gemini API)
-                        ▼
-          Build FAISS vector index
-                        ▼
-     ┌──────────────────────────────────┐
-     │   User asks a question           │
-     └──────────────────┬───────────────┘
-                        ▼
-           Embed the question (Gemini)
-                        ▼
-        Retrieve top-k similar chunks (FAISS)
-                        ▼
-      Generate answer from context (Gemini)
-                        ▼
-                  💬 Final Answer
-```
 
----
+## Project structure
 
-## 🛠️ Tech Stack
-
-| Component        | Technology                          |
-|-------------------|--------------------------------------|
-| UI                | Streamlit                            |
-| LLM & Embeddings  | Google Gemini API (`gemini-embedding-001`, `gemini-flash-latest`) |
-| Vector Search     | FAISS                                |
-| Text Chunking     | LangChain (`RecursiveCharacterTextSplitter`) |
-| PDF Parsing       | PyMuPDF (`fitz`)                     |
-| Config Management | python-dotenv                        |
-
----
-
-## 📁 Project Structure
-
-```
-Multimodel_Rag/
-├── app.py                     # Streamlit app (main entry point)
+```text
+AI-Powered-PDF-Assistant/
+├── app.py
 ├── utils/
-│   ├── pdf_reader.py          # Extract text from PDFs
-│   ├── chunking.py            # Split text into chunks
-│   ├── embedding.py           # Generate embeddings via Gemini
-│   ├── vector_store.py        # Build FAISS index
-│   ├── retriever.py           # Retrieve top-k relevant chunks
-│   ├── storage.py             # Save/load FAISS index + chunks
-│   └── llm.py                 # Generate final answer via Gemini
-├── step1_pdf_reader.py         │
-├── step2_chunking.py           │
-├── step3_embedding.py          │  Development journey —
-├── step4_vector_store.py       │  incremental scripts used
-├── step5_retriever.py          │  while building the pipeline
-├── step6_rag.py                │  step by step
-├── step7_build_index.py        │
-├── step8_chat.py               │
+│   ├── pdf_reader.py
+│   ├── chunking.py
+│   ├── embedding.py
+│   ├── vector_store.py
+│   ├── retriever.py
+│   ├── storage.py
+│   └── llm.py
+├── step1_pdf_reader.py
+├── step2_chunking.py
+├── step3_embedding.py
+├── step4_vector_store.py
+├── step5_retriever.py
+├── step6_rag.py
+├── step7_build_index.py
+├── step8_chat.py
 ├── requirements.txt
-├── .env.example                # Sample env file (no real key)
-└── sample.pdf                  # Example PDF for testing
+├── .env.example
+└── sample.pdf
 ```
 
----
+*This structure reflects the source README. Check the actual files in your local copy and update this section if the folder or filenames differ.*
 
-## 🚀 Getting Started
+## Getting started
 
-### 1. Clone the repository
+### 1. Clone your repository
+
+After creating your own GitHub repository, use its URL here:
+
 ```bash
-git clone https://github.com/aankitsharma/ask-to-zuzu-rag-chatbot.git
-cd ask-to-zuzu-rag-chatbot
+git clone https://github.com/YOUR-GITHUB-USERNAME/YOUR-REPOSITORY-NAME.git
+cd YOUR-REPOSITORY-NAME
 ```
 
-### 2. Create a virtual environment
+### 2. Create and activate a virtual environment
+
+**Windows:**
+
 ```bash
 python -m venv .venv
-.venv\Scripts\activate      # Windows
-source .venv/bin/activate   # macOS/Linux
+.venv\Scripts\activate
+```
+
+**macOS / Linux:**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
 ### 3. Install dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Set up your API key
-Copy `.env.example` to `.env` and add your Gemini API key:
-```
-GOOGLE_API_KEY=your_google_gemini_api_key_here
-```
-> Get a free API key from [Google AI Studio](https://aistudio.google.com/).
+### 4. Configure the Gemini API key
 
-### 5. Run the app
+Create a `.env` file in the project root. Use the variable name expected by the application:
+
+```env
+GOOGLE_API_KEY=your_gemini_api_key_here
+```
+
+Get an API key from [Google AI Studio](https://aistudio.google.com/).
+
+**Security:** Never commit `.env` or expose your API key. Ensure `.env` is listed in `.gitignore`. Keep `.env.example` as a template containing only a placeholder value.
+
+### 5. Run the application
+
 ```bash
 streamlit run app.py
 ```
 
----
+Streamlit will print a local URL in the terminal, usually `http://localhost:8501`.
 
-## 👶 New to RAG? Learn It Step by Step
+## Learning the RAG pipeline
 
-This repo doubles as a learning path. Instead of jumping into the full app, walk through these files in order — each one adds exactly one new concept on top of the last:
+The repository also includes individual scripts that demonstrate the pipeline in stages:
 
-| Step | File | What you'll learn |
-|------|------|--------------------|
-| 1 | `step1_pdf_reader.py` | Extracting raw text from a PDF |
-| 2 | `step2_chunking.py` | Splitting long text into overlapping chunks |
-| 3 | `step3_embedding.py` | Turning text chunks into vector embeddings |
-| 4 | `step4_vector_store.py` | Storing embeddings in a FAISS index |
-| 5 | `step5_retriever.py` | Retrieving the most relevant chunks for a query |
-| 6 | `step6_rag.py` | Combining retrieval with LLM answer generation |
-| 7 | `step7_build_index.py` | Saving the vector store to disk (so you don't rebuild it every time) |
-| 8 | `step8_chat.py` | Loading the saved index and chatting in a terminal loop |
+| Script | Concept |
+|---|---|
+| `step1_pdf_reader.py` | Extracting text from PDFs |
+| `step2_chunking.py` | Splitting text into overlapping chunks |
+| `step3_embedding.py` | Converting text into embeddings |
+| `step4_vector_store.py` | Creating a FAISS vector index |
+| `step5_retriever.py` | Finding relevant chunks |
+| `step6_rag.py` | Combining retrieval and generation |
+| `step7_build_index.py` | Building and saving the index |
+| `step8_chat.py` | Querying the saved index from the terminal |
 
-Run any step directly:
+Run an individual script from the project root, for example:
+
 ```bash
 python step1_pdf_reader.py
 ```
-Read the code, run it, see the output — then move to the next step. By step 8, you'll understand every moving part behind `app.py`.
 
----
+Check each script's code and required inputs before running it.
 
-## 🧪 Command-Line Alternative
+## Current limitations
 
-Prefer working from the terminal? You can also build and query the index without the UI:
+- The application requires internet access to call the Gemini API.
+- Gemini API availability, quotas and pricing depend on the account and current Google terms.
+- Answers can still be incorrect or incomplete; retrieved context does not guarantee factual accuracy.
+- Scanned PDFs may require OCR if they do not contain selectable text.
+- The quality of retrieval depends on the extracted text, chunking settings and embedding model.
 
-```bash
-python step7_build_index.py   # builds and saves the FAISS index
-python step8_chat.py          # chat with your document in the terminal
-```
+## Possible improvements
 
----
+- Display the PDF page numbers or source passages used for each answer.
+- Add conversation history for follow-up questions.
+- Support DOCX and TXT files.
+- Add validation for file type, file size and empty PDFs.
+- Deploy the application using Streamlit Community Cloud.
 
-## 🔮 Future Improvements
+## Author
 
-- [ ] Support for multiple file types (DOCX, TXT)
-- [ ] Source citation (show which chunk/page an answer came from)
-- [ ] Conversation memory for follow-up questions
-- [ ] Deploy on Streamlit Community Cloud
+**Prasanna Kumar Rout**
 
----
+This is a learning and portfolio project. The original implementation that this work is based on is credited below. Add links to your GitHub profile and document the features you personally implement before presenting the project as your own modified work.
 
-## 👤 Author
+## Acknowledgements
 
-**Aankit Sharma**
-Transitioning from a 12+ year career in BFSI/Relationship Management into Data Analytics & Data Science.
-
-- GitHub: [@aankitsharma](https://github.com/aankitsharma)
-- LinkedIn: [Aankit Sharma](https://linkedin.com/in/aankit-sharma-373784409)
-
----
-
-## 📄 License
-
-This project is open source and available for learning purposes.
+- Original reference project: [Ask to Zuzu — PDF Q&A Chatbot](https://github.com/aankitsharma/ask-to-zuzu-rag-chatbot) by Aankit Sharma.
+- [Google Gemini API](https://ai.google.dev/)
+- [Streamlit](https://streamlit.io/)
+- [FAISS](https://github.com/facebookresearch/faiss)
+- [LangChain](https://www.langchain.com/)
+- [PyMuPDF](https://pymupdf.readthedocs.io/)
